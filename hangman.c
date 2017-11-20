@@ -74,7 +74,7 @@ void print_hangman(int numStrikes)
 void print_title()
 {
     // Prints the title's header text
-    printf("##### HANGMAN #####\n");
+    printf("-----HANGMAN-----\n");
     // Prints the full hangman
     print_hangman(5);
     // Prints the possible commands for the player to enter
@@ -93,6 +93,22 @@ void clear_screen()
     // The reason this function exists is not to save space and avoid repetition of code
     // (it only consists of one line, after all),but rather to provide clarity for the reader
     // as to what the code is actually doing.
+}
+
+// Prints the game over screen. Takes on parameter, a string
+// called correctWord that is the solution which the user
+// failed to guess
+void print_game_over(char *correctWord)
+{
+    // When the game is over, the screen is cleared,
+    // "GAME OVER" is printed, the final state of the hangman
+    // is displayed, and the player is prompted to return to the
+    // title screen
+    clear_screen();
+    printf("GAME OVER\n");
+    print_hangman(5);
+    printf("THE CORRECT ANSWER WAS:\n%s\n", correctWord);
+    printf("PRESS ENTER TO RETURN TO THE TITLE SCREEN\n");
 }
 
 // Checks if a character c is in a string s.
@@ -262,10 +278,9 @@ int main()
             {
                 clear_screen();
                 print_hangman(numIncorrect);
+                // Prints the correct answer under the hangman (used for testing)
                 printf("%s\n", currentWord);
-                // Prints the current phrase that the console should
-                // be displaying
-
+                
                 // Iterates through the string, and checks if each
                 // of its letters have already been guessed
                 for (i = 0; i < strlen(currentWord); i++)
@@ -287,7 +302,8 @@ int main()
                 }
                 // Prints a new line afterward
                 printf("\n");
-
+                // Prints the current phrase that the console should
+                // be displaying
                 printf("%s\n", currentConsolePhrase);
                 // Prints the last letter that the player entered
                 printf("%c\n", c);
@@ -296,7 +312,7 @@ int main()
                 // Also note that due to just how scanning for chars works in C,
                 // the player can enter multiple letters at once, and then their
                 // results will each be computed almost instantly. This allows
-                // a player to take a guess at the word, but if they have gotten any
+                // a player to take a guess at the entire word, but if they have gotten any
                 // letters wrong in their guess, then their number of incorrect guesses
                 // will be incremented almost instantly as well. So a wrong guess may
                 // cause a player to instantly win or instantly lose
@@ -330,14 +346,9 @@ int main()
                 // Adds the entered letter to the guessedLetters array
                 append_char_to_string(c, guessedLetters);
             }
-            // When the game is over, the screen is cleared,
-            // "GAME OVER" is printed, the final state of the hangman
-            // is displayed, and the player is prompted to return to the
-            // title screen
-            clear_screen();
-            printf("GAME OVER\n");
-            print_hangman(numIncorrect);
-            printf("PRESS ENTER TO RETURN TO THE TITLE SCREEN\n");
+
+            print_game_over(currentWord);
+
             // This little do while loop allows the player to simply
             // press enter to return to the title screen, without
             // having to enter a value first
