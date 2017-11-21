@@ -1,7 +1,14 @@
+// ---- HANGMAN ----
+// Author: Brent Pappas
+// Date: October-November, 2017
+// Class: COP3223H @ UCF
+// Professor: Dr. Glenn Martin
+
+// Include statements
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <time.h>
 
 // Number of words in wordbank.txt.
@@ -259,6 +266,7 @@ int random_int_in_range(int min, int max)
     return r;
 }
 
+// Main program function
 int main()
 {
     // Initialize variables
