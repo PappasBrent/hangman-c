@@ -6,7 +6,7 @@
 
 // Number of words in wordbank.txt.
 // I would prefer a way to dynamically update this,
-// but for now it is required to harcode the number of words
+// but for now it is required to hardcode the number of words
 // in the wordbank into the top of the program
 #define NUM_WORDS 123
 // Maximum string length
@@ -70,18 +70,6 @@ void print_hangman(int numStrikes)
     printf("|__________\n");
 }
 
-// Prints the title screen
-void print_title()
-{
-    // Prints the title's header text
-    printf("-----HANGMAN-----\n");
-    // Prints the full hangman
-    print_hangman(5);
-    // Prints the possible commands for the player to enter
-    printf("ENTER \"START\" TO BEGIN!\n");
-    printf("ENTER \"QUIT\" TO EXIT.\n");
-}
-
 // Clears all the content from the open terminal window
 // (only works in Windows)
 void clear_screen()
@@ -93,6 +81,18 @@ void clear_screen()
     // The reason this function exists is not to save space and avoid repetition of code
     // (it only consists of one line, after all),but rather to provide clarity for the reader
     // as to what the code is actually doing.
+}
+
+// Prints the title screen
+void print_title()
+{
+    // Prints the title's header text
+    printf("---- HANGMAN ----\n");
+    // Prints the full hangman
+    print_hangman(5);
+    // Prints the possible commands for the player to enter
+    printf("ENTER \"START\" TO BEGIN!\n");
+    printf("ENTER \"QUIT\" TO EXIT.\n");
 }
 
 // Prints the game over screen. Takes on parameter, a string
@@ -108,6 +108,59 @@ void print_game_over(char *correctWord)
     printf("GAME OVER\n");
     print_hangman(5);
     printf("THE CORRECT ANSWER WAS:\n%s\n", correctWord);
+    printf("PRESS ENTER TO RETURN TO THE TITLE SCREEN\n");
+}
+
+// Prints the victory screen, with some snazzy delay effects
+// to make the program seem more "alive", then promtpts the user
+// to return to the title screen
+void print_win()
+{
+    // Iterator variable
+    int i;
+    // Victory text
+    char *winText = "YOU WIN!";
+
+    // Struct used for printing to the console with a delay.
+    struct timespec tim, tim2;
+    // This can be set to 0
+    tim.tv_sec = 0;
+    // This is the number of nanoseconds that I want the computer
+    // to pause for before continuing with program's execution.
+    // 1 second = 1,000,000,000 (1 billion) nanoseconds.
+    // The following time thus represents a quarter of second:
+    tim.tv_nsec = 250000000L;
+    // The function used for printing to the console with a delay
+    // is nanosleep, included in time.h
+    // The way I would call this function is:
+    // nanosleep(&tim, &tim2)
+    // I found this out by browsing StackOverflow:
+    // https://stackoverflow.com/questions/7684359/how-to-use-nanosleep-in-c-what-are-tim-tv-sec-and-tim-tv-nsec
+    // I just wanted to add something to my program that would
+    // make it a bit more unique and exciting
+
+    // Prints preliminary dashes with delay
+    for (i = 0; i < 4; i++)
+    {
+        nanosleep(&tim, &tim2);
+        printf(" - ");
+    }
+
+    // Prints each letter in victory text with delay
+    for (i = 0; i < strlen(winText); i++)
+    {
+        nanosleep(&tim, &tim2);
+        printf(" %c ", winText[i]);
+    }
+
+    // Prints postliminary dashes with delay
+    for (i = 0; i < 4; i++)
+    {
+        nanosleep(&tim, &tim2);
+        printf(" - ");
+    }
+
+    printf("\n");
     printf("PRESS ENTER TO RETURN TO THE TITLE SCREEN\n");
 }
 
@@ -185,7 +238,9 @@ int random_int_in_range(int min, int max)
     int r;
     // Randomizes computer's seed based on the current time
     srand(time(NULL));
+    // Assigns the value of the random integer to r
     r = (rand() % (max + 1)) + min;
+    // Returns r
     return r;
 }
 
@@ -202,6 +257,11 @@ int main()
     // Integer storing the number of incorrect guesses
     // the player has made
     int numIncorrect;
+
+    // Integer storing the number of correct letters the
+    // the player has guessed. They win once this value
+    // equals the length of the solution word
+    int numCorrect;
 
     // String storing the current word that the player is
     // trying to guess
@@ -236,11 +296,6 @@ int main()
         strcpy(wordbank[i], strupr(wordbank[i]));
     }
 
-    // for (i = 0; i < NUM_WORDS; i++)
-    // {
-    //     printf("%d: %s\n", i, wordbank[i]);
-    // }
-
     // Runs the game loop until the player decides to quit
     while (1)
     {
@@ -270,29 +325,40 @@ int main()
             r = random_int_in_range(0, NUM_WORDS - 1);
             // Sets the value of currentWord to a random value from wordbank
             strcpy(currentWord, wordbank[r]);
-            // printf("%d\n", random_int_in_range(0, NUM_WORDS - 1));
-            // printf("%s\n", currentWord);
-            // printf("%d\n", r);
+            // Prompts the user to guess a letter
             strcpy(currentConsolePhrase, "GUESS A LETTER");
-            while (numIncorrect < 5)
+            // Resets the value of c
+            c = ' ';
+            // Resets the guessed letters in guessedLetters
+            strcpy(guessedLetters, "");
+            // Asks the player to guess letters until they either win
+            // or lose
+            while (1)
             {
                 clear_screen();
+
+                // Prints the hangman
                 print_hangman(numIncorrect);
+
                 // Prints the correct answer under the hangman (used for testing)
-                printf("%s\n", currentWord);
-                
+                // printf("%s\n", currentWord);
+
+                // Resets the number of correct guesses before checking
+                numCorrect = 0;
+
                 // Iterates through the string, and checks if each
                 // of its letters have already been guessed
                 for (i = 0; i < strlen(currentWord); i++)
                 {
                     // If the current letter that is being checked is in
                     // the guessedLetters string, then it must have already
-                    // been guessed, and is printed
+                    // been guessed, and is printed. Then, numCorrect is incremented.
                     if (char_in_string(currentWord[i], guessedLetters, 0))
                     {
                         printf("%c ", currentWord[i]);
+                        numCorrect += 1;
                     }
-                    // If note, then a blank line (underscore) is printed
+                    // If not, then a blank line (underscore) is printed
                     // instead so that the player knows how many letters there
                     // are in the word
                     else
@@ -302,6 +368,23 @@ int main()
                 }
                 // Prints a new line afterward
                 printf("\n");
+
+                // Ends the loop and prints the win screen if the player
+                // has guessed all the letters in the word
+                if (numCorrect >= strlen(currentWord))
+                {
+                    print_win();
+                    break;
+                }
+
+                // Ends the loop and prints the game over screen if the
+                // player has made too many incorrect guesses
+                if (numIncorrect >= 5)
+                {
+                    print_game_over(currentWord);
+                    break;
+                }
+
                 // Prints the current phrase that the console should
                 // be displaying
                 printf("%s\n", currentConsolePhrase);
@@ -346,8 +429,6 @@ int main()
                 // Adds the entered letter to the guessedLetters array
                 append_char_to_string(c, guessedLetters);
             }
-
-            print_game_over(currentWord);
 
             // This little do while loop allows the player to simply
             // press enter to return to the title screen, without
