@@ -14,6 +14,7 @@
 // The number of letter in the alphabet
 // (for all the possible letters the player can guess)
 #define NUM_LETTERS_IN_ALPHA 26
+#define _POSIX_C_SOURCE 199309L
 
 // Prints the hangman. The number of body parts displayed
 // corresponds to the the number of incorrect guesses the player
@@ -112,7 +113,7 @@ void print_game_over(char *correctWord)
 }
 
 // Prints the victory screen, with some snazzy delay effects
-// to make the program seem more "alive", then promtpts the user
+// to make the program seem more "alive", then prompts the user
 // to return to the title screen
 void print_win()
 {
@@ -122,7 +123,21 @@ void print_win()
     char *winText = "YOU WIN!";
 
     // Struct used for printing to the console with a delay.
-    struct timespec tim, tim2;
+    // Actually already included in time.h (I think), but
+    // CodeBlocks doesn't recognize this because it runs C99
+    // and not POSIX. See here:
+    // https://stackoverflow.com/questions/42597685/storage-size-of-timespec-isnt-known
+    // At first, I didn't know how to get around this, but I eventually
+    // figured out that I could circumvent this issue by simply
+    // redeclaring the timespec struct before using it:
+    struct timespec
+    {
+        int tv_sec;
+        int tv_nsec;
+    };
+
+    struct timespec tim;
+    struct timespec tim2;
     // This can be set to 0
     tim.tv_sec = 0;
     // This is the number of nanoseconds that I want the computer
